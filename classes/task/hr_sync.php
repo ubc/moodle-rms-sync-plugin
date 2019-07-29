@@ -1,0 +1,58 @@
+<?php
+
+namespace tool_hrsync\task;
+
+/**
+ * HR sync scheduled task.
+ */
+class hr_sync extends \core\task\scheduled_task {
+
+    /**
+     * Return the task's name as shown in admin screens.
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('hr_sync', 'tool_hrsync');
+    }
+
+    /**
+     * Execute the task.
+     */
+    public function execute() {
+        global $DB;
+
+        $remote_file =  get_config('tool_hrsync', 'sftp_remote_file');
+
+        $query = file_get_contents(__DIR__ . '/../../query_using_coursecompletions.sql');
+
+        $users = $DB->get_recordset_sql($query);
+
+
+        $connection = ssh2_connect(get_config('tool_hrsync', 'sftp_host'), get_config('tool_hrsync', 'sftp_port'));
+        ssh2_auth_password($connection, get_config('tool_hrsync', 'sftp_username'), get_config('tool_hrsync', 'sftp_password'));
+
+        $sftp = ssh2_sftp($connection);
+
+        $local = fopen('/tmp/hrms.csv', 'w');
+        $stream = fopen('ssh2.sftp://' . (int)$sftp . $remote_file, 'w');
+
+        if (! $stream) {
+            throw new \coding_exception("Could not open file: $remote_file");
+        }
+
+        foreach ($users as $user) {
+            // fputcsv will include double quotes for enclosures
+            // fputcsv($local, get_object_vars($user), '|', chr(127));
+            fwrite($local, implode('|', get_object_vars($user)) ."\r\n");
+            if (fwrite($stream, implode('|', get_object_vars($user)) ."\r\n") === false) {
+                throw new \coding_exception('Error write to remote location.');
+            }
+        }
+
+        @fclose($stream);
+        $users->close();
+    }
+}
+
+
