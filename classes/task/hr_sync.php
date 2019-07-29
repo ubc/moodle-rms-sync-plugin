@@ -22,6 +22,10 @@ class hr_sync extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
 
+        if (empty(get_config('tool_hrsync', 'sftp_host'))) {
+            return;
+        }
+        
         $remote_file =  get_config('tool_hrsync', 'sftp_remote_file');
 
         $query = file_get_contents(__DIR__ . '/../../query_using_coursecompletions.sql');
