@@ -25,7 +25,7 @@ class hr_sync extends \core\task\scheduled_task {
         if (empty(get_config('tool_hrsync', 'sftp_host'))) {
             return;
         }
-        
+
         $remote_file =  get_config('tool_hrsync', 'sftp_remote_file');
 
         $query = file_get_contents(__DIR__ . '/../../query_using_coursecompletions.sql');
@@ -56,6 +56,8 @@ class hr_sync extends \core\task\scheduled_task {
 
         @fclose($stream);
         $users->close();
+
+        ssh2_sftp_chmod($sftp, $remote_file, 0664);
     }
 }
 
