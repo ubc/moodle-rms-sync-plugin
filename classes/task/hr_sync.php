@@ -48,8 +48,9 @@ class hr_sync extends \core\task\scheduled_task {
         foreach ($users as $user) {
             // fputcsv will include double quotes for enclosures
             // fputcsv($local, get_object_vars($user), '|', chr(127));
-            fwrite($local, implode('|', get_object_vars($user)) ."\r\n");
-            if (fwrite($stream, implode('|', get_object_vars($user)) ."\r\n") === false) {
+            $d = array_map('trim', get_object_vars($user));
+            fwrite($local, implode('|', $d) ."\r\n");
+            if (fwrite($stream, implode('|', $d) ."\r\n") === false) {
                 throw new \coding_exception('Error write to remote location.');
             }
         }
