@@ -60,5 +60,13 @@ if ( $hassiteconfig ){
         PARAM_TEXT
     ));
 
+    $settings->add(new admin_setting_configtext(
+        'tool_hrsync/timezone',
+        'Timezone',
+        'Allow set a different timezone than script/server default',
+        'None',
+        PARAM_TEXT
+    ));
+
     $ADMIN->add('tools', $settings);
 }
