@@ -26,21 +26,18 @@ class hr_sync extends \core\task\scheduled_task {
             return;
         }
 
-        # setup custom timezone if it's set
-        $timezone = get_config('tool_hrsync', 'timezone');
-        $old_timezone = null;
-        if (!empty($timezone)) {
-            # backup the old one
-            $old_timezone = date_default_timezone_get();
-            date_default_timezone_set($timezone);
-        }
-
         $remote_file =  get_config('tool_hrsync', 'sftp_remote_file');
 
         $query = file_get_contents(__DIR__ . '/../../query_using_coursecompletions.sql');
 
-        $users = $DB->get_recordset_sql($query);
+        # setup custom timezone if it's set
+        $timezone = get_config('tool_hrsync', 'timezone');
+        if (!empty($timezone) && $timezone !== 'None') {
+            $DB->execute('SET @OLD_TIME_ZONE=@@TIME_ZONE');
+            $DB->execute("SET TIME_ZONE='$timezone'");
+        }
 
+        $users = $DB->get_recordset_sql($query);
 
         $connection = ssh2_connect(get_config('tool_hrsync', 'sftp_host'), get_config('tool_hrsync', 'sftp_port'));
         ssh2_auth_password($connection, get_config('tool_hrsync', 'sftp_username'), get_config('tool_hrsync', 'sftp_password'));
@@ -70,8 +67,8 @@ class hr_sync extends \core\task\scheduled_task {
         ssh2_sftp_chmod($sftp, $remote_file, 0664);
 
         # restore timezone setting
-        if (!empty($old_timezone)) {
-            date_default_timezone_set($old_timezone);
+        if (!empty($timezone) && $timezone !== 'None') {
+            $DB->execute('SET TIME_ZONE=@OLD_TIME_ZONE');
         }
     }
 }

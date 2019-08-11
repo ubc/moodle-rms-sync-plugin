@@ -8,12 +8,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2019081000;
+$plugin->version = 2019081001;
 $plugin->requires = 2018120300; # moodle 3.6
 $plugin->cron = 0;
 $plugin->component = 'tool_hrsync';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v0.2';
+$plugin->release = 'v0.3';
 
 $plugin->dependencies = [
 ];

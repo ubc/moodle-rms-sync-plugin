@@ -74,4 +74,4 @@ WHERE
 		and LENGTH(dbocourse.idnumber)=6   -- only courses with hrms supplied code which is expected to be a six-letter code.
 order by 
 		user_cwl, 
-		timecompleted 
+		timecompleted;
